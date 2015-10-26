@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, RankNTypes #-}
+{-# LANGUAGE GADTs, RankNTypes, PatternGuards #-}
 
 module Haddock.Backends.MyBackend
 where
@@ -23,6 +23,8 @@ import Haddock.Types hiding (Version)
 import Data.Data
 import Data.Generics.Aliases hiding (GT)
 import Data.Maybe (isJust)
+import System.IO
+import System.FilePath
 
 ppMyBackend :: DynFlags -> String -> Version -> String -> Maybe (Doc RdrName) -> [Interface] -> FilePath -> IO ()
 ppMyBackend dflags package version synopsis prologue ifaces odir = do
@@ -37,7 +39,23 @@ ppModule dflags iface =
 
 --------------------------------
 
-type Loc = SrcSpan
+ppAnnot :: DynFlags -> [Interface] -> FilePath -> FilePath -> IO ()
+ppAnnot dflags ifaces odir file
+  = do putStrLn $ "Writing Annots to: " ++ target
+       withFile target WriteMode $ \h -> mapM_ (render dflags h) ifaces
+    where target = odir </> file
+
+render :: DynFlags -> Handle -> Interface -> IO ()
+render dflags annH iface
+  = do putStrLn $ "Render Annot: src = " ++ src ++ " module = " ++ modl
+       hPutStr annH annots
+    where src     = ifaceOrigFilename iface
+          modl    = moduleNameString $ moduleName $ ifaceMod iface
+          annots  = show_AnnMap modl $ getAnnMap dflags src $ ifaceTypecheckedSrc iface
+
+--------------------------------
+
+type Loc = RealSrcSpan
 
 newtype AnnMap = Ann (M.Map Loc (String, String))
 
@@ -71,7 +89,8 @@ getNames dflags srcName z =
   where idOk = not . isDictId
 
 getLocEs ::  (Data a) => DynFlags -> a -> [(HsExpr Id, Loc, String)]
-getLocEs dflags z = [(e, l, stripParens $ showPpr dflags e) | L l e <- findLEs z]
+getLocEs dflags z = [(e, l, stripParens $ showPpr dflags e) | L l' e <- findLEs z,
+                               let Just l = toRealSrcSpan l' ]
   where stripParens ('(':s)  = stripParens s
         stripParens s        = stripRParens (reverse s)
         stripRParens (')':s) = stripRParens s
@@ -89,19 +108,20 @@ canonize anns = map (head . L.sortBy cmp) $ groupWith fst anns
 renderId :: DynFlags -> Id -> String
 renderId dflags = showSDocForUser dflags neverQualify . pprTyThing . AnId
 
-spanFilename :: SrcSpan -> FastString
-spanFilename (UnhelpfulSpan _)  = fsLit ""
-spanFilename (RealSrcSpan sp)   = srcSpanFile sp
+toRealSrcSpan :: SrcSpan -> Maybe RealSrcSpan
+toRealSrcSpan (UnhelpfulSpan _) = Nothing
+toRealSrcSpan (RealSrcSpan sp)  = Just sp
 
 idLoc :: FastString -> Id -> Maybe Loc
 idLoc src x
   | not (isGoodSrcSpan sp)
   = Nothing
-  | src  /= spanFilename sp
+  | Just rspan <- toRealSrcSpan sp,
+    src  == srcSpanFile rspan
+  = Just rspan
+  | otherwise
   = Nothing
-  | otherwise              = Just sp
   where sp  = nameSrcSpan $ idName x
-
 
 findLEs :: Data a => a -> [LHsExpr Id]
 findLEs a = listifyBut (isGoodSrcSpan . getLoc) skipGuards a
