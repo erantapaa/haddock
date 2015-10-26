@@ -41,10 +41,10 @@ ppModule dflags iface =
 --------------------------------
 
 ppAnnot :: DynFlags -> [Interface] -> FilePath -> FilePath -> IO ()
-ppAnnot dflags ifaces odir file
+ppAnnot dflags ifaces odir ofile
   = do putStrLn $ "Writing Annots to: " ++ target
        withFile target WriteMode $ \h -> mapM_ (render dflags h) ifaces
-    where target = odir </> file
+    where target = odir </> ofile
 
 render :: DynFlags -> Handle -> Interface -> IO ()
 render dflags annH iface
