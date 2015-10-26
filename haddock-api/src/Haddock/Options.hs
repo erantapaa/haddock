@@ -94,6 +94,7 @@ data Flag
   | Flag_NoPrintMissingDocs
   | Flag_PackageName String
   | Flag_PackageVersion String
+  | Flag_Annot
   deriving (Eq, Show)
 
 
@@ -190,7 +191,9 @@ options backwardsCompat =
     Option [] ["package-name"] (ReqArg Flag_PackageName "NAME")
       "name of the package being documented",
     Option [] ["package-version"] (ReqArg Flag_PackageVersion "VERSION")
-      "version of the package being documented in usual x.y.z.w format"
+      "version of the package being documented in usual x.y.z.w format",
+    Option ['a']  ["annot"] (NoArg Flag_Annot)
+      "run the type annotation processor"
   ]
 
 

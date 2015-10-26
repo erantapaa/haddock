@@ -6,14 +6,13 @@ where
 import GHC
 import CoreSyn (isId)
 import Id (idName, isDictId)
-import FastString (FastString(..), unpackFS, fsLit)
-import Name (nameSrcSpan)
-import NameSet (NameSet(..))
+import FastString (FastString(..), fsLit)
+-- import Name (nameSrcSpan)
+import NameSet (NameSet)
 import Outputable (showPpr, neverQualify, showSDocForUser)
 import PprTyThing (pprTyThing)
 
-import Data.Version
--- import System.FilePath
+-- import Data.Version
 import qualified Data.List as L
 import GHC.Exts (groupWith)
 import qualified Data.Map as M
@@ -26,6 +25,7 @@ import Data.Maybe (isJust)
 import System.IO
 import System.FilePath
 
+{-
 ppMyBackend :: DynFlags -> String -> Version -> String -> Maybe (Doc RdrName) -> [Interface] -> FilePath -> IO ()
 ppMyBackend dflags package version synopsis prologue ifaces odir = do
   putStrLn "Got here"
@@ -36,6 +36,7 @@ ppModule dflags iface =
   where
     modl    = moduleNameString $ moduleName $ ifaceMod iface -- :: String
     src     = ifaceOrigFilename iface                        -- :: FilePath
+-}
 
 --------------------------------
 
