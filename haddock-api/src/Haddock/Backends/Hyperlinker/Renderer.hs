@@ -160,7 +160,7 @@ externalNameHyperlink (srcs, _) name content = case Map.lookup mdl srcs of
         [ Html.href $ hypSrcModuleNameUrl mdl name ]
     Just (SrcExternal path) -> Html.anchor content !
         [ Html.href $ path </> hypSrcModuleNameUrl mdl name ]
-    Nothing -> content
+    Nothing -> Html.anchor content ! [ Html.strAttr "xref" $ hypSrcModuleNameUrl mdl name ]
   where
     mdl = GHC.nameModule name
 
