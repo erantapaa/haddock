@@ -52,6 +52,7 @@ library
 
     , ghc-paths
     , haddock-library == 1.2.*
+    , syb
 
   hs-source-dirs:
       src
