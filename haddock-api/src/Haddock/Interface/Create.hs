@@ -21,6 +21,7 @@ import Haddock.GhcUtils
 import Haddock.Utils
 import Haddock.Convert
 import Haddock.Interface.LexParseRn
+import Haddock.Interface.Externals
 import Haddock.Backends.Hyperlinker.Types
 import Haddock.Backends.Hyperlinker.Ast as Hyperlinker
 import Haddock.Backends.Hyperlinker.Parser as Hyperlinker
@@ -127,6 +128,8 @@ createInterface tm flags modMap instIfaceMap = do
 
   tokenizedSrc <- mkMaybeTokenizedSrc flags tm
 
+  externsMap <- liftGhcToErrMsgGhc $ ghcBuildExternsMap tm
+
   return $! Interface {
     ifaceMod             = mdl
   , ifaceOrigFilename    = msHsFilePath ms
@@ -152,7 +155,7 @@ createInterface tm flags modMap instIfaceMap = do
   , ifaceWarningMap      = warningMap
   , ifaceTokenizedSrc    = tokenizedSrc
   , ifaceTypecheckedSrc  = tm_typechecked_source tm
-  , ifaceImportInfo      = Nothing
+  , ifaceExternsMap      = Just externsMap
   }
 
 mkAliasMap :: DynFlags -> Maybe RenamedSource -> M.Map Module ModuleName

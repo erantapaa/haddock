@@ -15,6 +15,7 @@ import Text.XHtml hiding ((</>))
 import Data.Maybe
 import System.Directory
 import System.FilePath
+import qualified Data.Map as Map
 
 
 -- | Generate hyperlinked source for given interfaces.
@@ -47,7 +48,8 @@ ppHyperlinkedModuleSource srcdir pretty srcs iface =
         Just tokens -> writeFile path . html . render' $ tokens
         Nothing -> return ()
   where
-    render' = render (Just srcCssFile) (Just highlightScript) srcs
+    srcExterns = (fst srcs, snd srcs, fromMaybe (Map.empty) (ifaceExternsMap iface) )
+    render' = render (Just srcCssFile) (Just highlightScript) srcExterns
     html = if pretty then renderHtml else showHtml
     path = srcdir </> hypSrcModuleFile (ifaceMod iface)
 
