@@ -152,6 +152,7 @@ createInterface tm flags modMap instIfaceMap = do
   , ifaceWarningMap      = warningMap
   , ifaceTokenizedSrc    = tokenizedSrc
   , ifaceTypecheckedSrc  = tm_typechecked_source tm
+  , ifaceImportInfo      = Nothing
   }
 
 mkAliasMap :: DynFlags -> Maybe RenamedSource -> M.Map Module ModuleName

@@ -8,6 +8,7 @@ import Haddock.Backends.Hyperlinker.Types
 import Haddock.Backends.Hyperlinker.Utils
 
 import qualified GHC
+import qualified Module as GHC
 import qualified Name as GHC
 import qualified Unique as GHC
 
@@ -160,7 +161,11 @@ externalNameHyperlink (srcs, _) name content = case Map.lookup mdl srcs of
         [ Html.href $ hypSrcModuleNameUrl mdl name ]
     Just (SrcExternal path) -> Html.anchor content !
         [ Html.href $ path </> hypSrcModuleNameUrl mdl name ]
-    Nothing -> Html.anchor content ! [ Html.strAttr "xref" $ hypSrcModuleNameUrl mdl name ]
+    Nothing -> let mdlname = GHC.moduleNameString (GHC.moduleName mdl)
+                   pkgkey  = GHC.packageKeyString (GHC.modulePackageKey mdl)
+                   occName = GHC.getOccString name
+                   xref    = pkgkey ++ ":" ++ mdlname ++ "." ++ occName
+               in Html.anchor content ! [ Html.strAttr "xref" xref ]
   where
     mdl = GHC.nameModule name
 

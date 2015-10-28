@@ -56,6 +56,7 @@ type DeclMap       = Map Name [LHsDecl Name]
 type InstMap       = Map SrcSpan Name
 type FixMap        = Map Name Fixity
 type DocPaths      = (FilePath, Maybe FilePath) -- paths to HTML and sources
+type ExternsMap    = Map Name (LImportDecl Name)
 
 
 -----------------------------------------------------------------------------
@@ -135,7 +136,11 @@ data Interface = Interface
     -- source generation flag).
   , ifaceTokenizedSrc :: !(Maybe [RichToken])
 
+    -- | TypecheckedSource - for use with 'ppAnnot'
   , ifaceTypecheckedSrc :: !TypecheckedSource
+
+    -- | Where imported names come from
+  , ifaceImportInfo     :: !(Maybe ExternsMap)
   }
 
 type WarningMap = Map Name (Doc Name)

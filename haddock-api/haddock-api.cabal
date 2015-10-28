@@ -65,6 +65,7 @@ library
   other-modules:
     Haddock
     Haddock.Interface
+    Haddock.Interface.Externals
     Haddock.Interface.Rename
     Haddock.Interface.Create
     Haddock.Interface.AttachInstances
