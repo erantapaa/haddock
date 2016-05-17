@@ -34,6 +34,7 @@ import Documentation.Haddock.Types
 import BasicTypes (Fixity(..))
 
 import GHC hiding (NoLink)
+import HscTypes (HscEnv)
 import DynFlags (ExtensionFlag, Language)
 import Coercion
 import NameSet
@@ -42,6 +43,8 @@ import Outputable
 import Control.Monad (ap)
 
 import Haddock.Backends.Hyperlinker.Types
+
+type TypedNodes = ([LHsExpr Id], [LHsBind Id], [LPat Id])
 
 -----------------------------------------------------------------------------
 -- * Convenient synonyms
@@ -140,6 +143,10 @@ data Interface = Interface
 
     -- | Where imported names come from
   , ifaceExternsMap     :: !(Maybe ExternsMap)
+
+    -- | All the source spans and their types
+  , ifaceTypedNodes     :: TypedNodes
+  , ifaceHscEnv         :: HscEnv
   }
 
 type WarningMap = Map Name (Doc Name)
