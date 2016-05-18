@@ -1,0 +1,36 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Data::Dumper;
+
+my $module;
+my %Spans;
+my $count = 0;
+while (<>) {
+  if (m/^module\s+([\w.]+)/) {
+    $module = $1;
+  } elsif (m/^(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(.*)/) {
+    push(@{ $Spans{$module} }, [$1, $2, $3, $4, $5]);
+  } else {
+    die "huh? $_"
+  }
+}
+
+for my $m (keys %Spans) {
+  my $spans = $Spans{$m};
+
+  my $path = "spans-$m.js";
+  open(my $fh, ">out/$path");
+  print {$fh} "typed_spans = [\n";
+
+  for my $i (0..$#$spans) {
+    my $comma = $i == $#$spans ? "" : ",";
+    my $x = $spans->[$i];
+    printf {$fh} qq{  [%d,%d,%d,%d,"%s"]%s\n},$$x[0], $$x[1], $$x[2], $$x[3], $$x[4], $comma;
+  }
+  print {$fh} "  ];\n";
+  close($fh);
+}
+
+# print Dumper(\%Spans), "\n";
