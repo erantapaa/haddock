@@ -341,8 +341,7 @@ render dflags flags qual ifaces installedIfaces extSrcMap = do
     ppHyperlinkedSource odir libDir opt_source_css pretty srcMap ifaces
 
   when (Flag_Annot `elem` flags) $ do
-    ppEmitSpanTypes dflags visibleIfaces odir "type-annotations"
-    -- ppAnnot dflags visibleIfaces odir "type-annotations" -- XXX fix this
+    ppEmitSpanTypes dflags visibleIfaces odir "type-srcspans"
 
 -- | From GHC 7.10, this function has a potential to crash with a
 -- nasty message such as @expectJust getPackageDetails@ because

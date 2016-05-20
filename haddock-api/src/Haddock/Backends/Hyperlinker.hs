@@ -16,6 +16,7 @@ import Data.Maybe
 import System.Directory
 import System.FilePath
 import qualified Data.Map as Map
+import Haddock.Utils (warnCopyFile)
 
 
 -- | Generate hyperlinked source for given interfaces.
@@ -33,8 +34,8 @@ ppHyperlinkedSource :: FilePath -- ^ Output directory
 ppHyperlinkedSource outdir libdir mstyle pretty srcs ifaces = do
     createDirectoryIfMissing True srcdir
     let cssFile = fromMaybe (defaultCssFile libdir) mstyle
-    copyFile cssFile $ srcdir </> srcCssFile
-    copyFile (libdir </> "html" </> highlightScript) $
+    warnCopyFile cssFile $ srcdir </> srcCssFile
+    warnCopyFile (libdir </> "html" </> highlightScript) $
         srcdir </> highlightScript
     mapM_ (ppHyperlinkedModuleSource srcdir pretty srcs) ifaces
   where

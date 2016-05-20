@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, ScopedTypeVariables #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Haddock.Utils
@@ -32,6 +32,7 @@ module Haddock.Utils (
 
   -- * Miscellaneous utilities
   getProgramName, bye, die, dieMsg, noDieMsg, mapSnd, mapMaybeM, escapeStr,
+  warnCopyFile,
 
   -- * HTML cross reference mapping
   html_xrefs_ref, html_xrefs_ref',
@@ -64,6 +65,7 @@ import Haddock.GhcUtils
 import GHC
 import Name
 
+import Control.Exception
 import Control.Monad ( liftM )
 import Data.Char ( isAlpha, isAlphaNum, isAscii, ord, chr )
 import Numeric ( showIntAtBase )
@@ -72,6 +74,7 @@ import qualified Data.Map as Map hiding ( Map )
 import Data.IORef ( IORef, newIORef, readIORef )
 import Data.List ( isSuffixOf )
 import Data.Maybe ( mapMaybe )
+import System.Directory ( copyFile )
 import System.Environment ( getProgName )
 import System.Exit
 import System.IO ( hPutStr, stderr )
@@ -357,6 +360,9 @@ isAlphaChar c    = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
 isDigitChar c    = c >= '0' && c <= '9'
 isAlphaNumChar c = isAlphaChar c || isDigitChar c
 
+warnCopyFile src dest = do
+  copyFile src dest `catch` \(e :: IOException) -> do
+    noDieMsg $ "Unable to copy file " ++ src ++ " to " ++ dest ++ ": " ++ show e
 
 -----------------------------------------------------------------------------
 -- * HTML cross references

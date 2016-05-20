@@ -51,7 +51,7 @@ ppCollectTypedNodes tc_src mod = do
 
 ppEmitSpanTypes :: DynFlags -> [Interface] -> FilePath -> FilePath -> IO ()
 ppEmitSpanTypes dflags ifaces outdir outfile = do
-  let outpath = outdir </> ("lexprs-" ++ outfile)
+  let outpath = outdir </> outfile
       style = defaultUserStyle
 
   withFile outpath WriteMode $ \h -> do
