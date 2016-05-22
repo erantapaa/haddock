@@ -44,8 +44,14 @@ def write_spans(path, spans):
     out.write("\n]\n")
 
 def main():
-  for path in sys.argv[1:]:
-    convert_file(path)
+  if len(sys.argv) == 2 and sys.argv[1] == '-':
+    # read from stdin
+    for path in sys.stdin:
+      path = path.rstrip()
+      convert_file(path)
+  else:
+    for path in sys.argv[1:]:
+      convert_file(path)
 
 if __name__ == '__main__':
   main()
