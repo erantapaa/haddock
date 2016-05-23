@@ -1,0 +1,10 @@
+
+Install style.css and highlight.js with:
+
+  find {doc-dir} -name 'src' | while read x; do cp style.css "$x/style.css"; done
+  find {doc-dir} -name 'src' | while read x; do cp highlight.js "$x/highlight.js"; done
+
+Create the type-spans-* files with:
+
+  find {doc-dir} -name 'type-srcspans | python spans-to-js.py -
+
