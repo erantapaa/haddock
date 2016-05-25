@@ -1,4 +1,5 @@
 #include span.js
+#include bestpos.js
 
 var highlight = function(on) {
 	return function () {

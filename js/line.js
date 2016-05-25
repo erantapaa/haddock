@@ -1,6 +1,8 @@
 // module line
 
 #include dom.js
+#include util.js
+  // needed for contains
 
 // locate_line(elt) : (lineno, mincol, maxcol, elt)
 //
@@ -11,12 +13,13 @@
 // show_line_spans *
 //
 // find_line(lineno) : elt
-// count_newlines(elt) : int
+// count_newlines(str) : int
+// count_newlines_elt(elt) : int
 // is_comment_span(elt) : bool
 // extract_line ***
 //
 // simple_highlight(line, lpos, rpos)
-// simple_unhighlight() 
+// simple_unhighlight()
 //
 // east_for_line(lineno)
 // east_point_for_line(lineno)
@@ -24,7 +27,6 @@
 // elts_for_line(lineeno) : [ elt ]
 //
 // is_comment_span(elt)
-// count_newlines(elt)
 //
 // locate which line a node is on
 
@@ -190,10 +192,14 @@ function is_comment_span(elt) {
   return contains(elt.className , "hs-comment")
 }
 
-function count_newlines(elt) {
+function count_newlines(txt) {
+  return (txt.match(/\n/g)||[]).length
+}
+
+function count_newlines_elt(elt) {
   if (elt) {
     var txt = text_content(elt)
-    return (txt.match(/\n/g)||[]).length 
+    return (txt.match(/\n/g)||[]).length
   }
   return 0
 }
