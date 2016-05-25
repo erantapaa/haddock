@@ -1,5 +1,7 @@
 #include span.js
-#include bestpos.js
+#include analyze.js
+#include placement.js 
+#include test_placement.js
 
 var highlight = function(on) {
 	return function () {

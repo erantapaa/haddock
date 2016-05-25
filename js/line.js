@@ -19,7 +19,7 @@
 // extract_line ***
 //
 // simple_highlight(line, lpos, rpos)
-// simple_unhighlight()
+// simple_unhighlight() 
 //
 // east_for_line(lineno)
 // east_point_for_line(lineno)
@@ -193,13 +193,13 @@ function is_comment_span(elt) {
 }
 
 function count_newlines(txt) {
-  return (txt.match(/\n/g)||[]).length
+  return (txt.match(/\n/g)||[]).length 
 }
 
 function count_newlines_elt(elt) {
   if (elt) {
     var txt = text_content(elt)
-    return (txt.match(/\n/g)||[]).length
+    return (txt.match(/\n/g)||[]).length 
   }
   return 0
 }

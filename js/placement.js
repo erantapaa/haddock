@@ -1,4 +1,4 @@
-// module position
+// module placement
 
 // ycoord_to_line
 // best_placement
