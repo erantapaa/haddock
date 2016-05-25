@@ -1,5 +1,4 @@
 #include span.js
-#include tooltip.js
 
 var highlight = function(on) {
 	return function () {
@@ -100,7 +99,7 @@ function shrink_type_span() {
 
 function remove_type_span() {
   span_stack = []
-  tooltip_remove()
+  remove_tooltip()
   simple_unhighlight()
 }
 
@@ -132,6 +131,14 @@ function create_tooltip(xpos,ypos) {
   return tip
 }
 
+function remove_tooltip() {
+  tip_elt = document.getElementsByClassName("tooltip-container")[0];
+  if (tip_elt) {
+    var bodyNode = document.getElementsByTagName("body")[0];
+    bodyNode.removeChild(tip_elt)
+  }
+}
+
 // find all spans intersecting a portion of a line.
 function find_spans(line, minCol, maxCol) {
   if (!typed_spans) {
@@ -149,7 +156,7 @@ function find_spans(line, minCol, maxCol) {
   return matches
 }
 
-function leafname(path) {
+function leaf_name(path) {
   return path.replace(/^.*(\\|\/|\:)/, '');
 }
 
@@ -178,7 +185,7 @@ function initialize() {
   // Determine the module name form the page url
 
   var href = window.location.href
-  var modname = leafname(href)
+  var modname = leaf_name(href)
   modname = modname.replace(/\.html(#.*)?$/,'')
   var src_url = "type-spans-" + modname + ".js"
 
