@@ -7,7 +7,7 @@ body {
 }
 
 .tooltip-container {
-  padding:10px;
+  padding:5px;
   position:absolute;
   margin:0;opacity:1;
   border-radius:5px;
@@ -16,6 +16,8 @@ body {
   width: auto;
   height:auto;
   color: black; 
+  /* font-family: monospace; */
+  font-size: 10pt;
   opacity: 0.7;
 }
 
