@@ -24,6 +24,7 @@ var highlight = function(on) {
 
 var typed_spans;     // will be loaded dynamically
 var span_stack = []  // stack of spans
+var line_info;       // an info object return from analyze_lines
 
 function handle_keypress(e) {
   var ch = (typeof e.which == "number") ? e.which : e.keyCode
@@ -53,6 +54,7 @@ function handle_click(e) {
   }
   var found = loc[0], lpos = loc[1], rpos = loc[2]
 
+  e.preventDefault()
   console.log("hit at line:", found, "lpos:", lpos, "rpos:", rpos)
   var spans = find_spans(found, lpos, rpos)
 
@@ -67,14 +69,36 @@ function handle_click(e) {
 
   if (s) {
     span_stack.unshift(s)
-    var bbox = elt_offset(elt)
-    var xpos = bbox.left + bbox.width + 20,
-        ypos = bbox.top - bbox.height - 20
-    var tip = create_tooltip( xpos, ypos )
-    update_span_dom(s, tip)
+
+    var tip = create_tooltip(null, s[4])
+    var bbox = elt_offset(tip)
+
+    console.log("bbox of tooltip:", show_object(bbox))
+
+    var pos = best_tooltip_position(elt, bbox.width, bbox.height)
+
+    move_tooltip(tip, pos)
+    highlight_span(s)                 // span.js
+    console.log("type:", sp[4])
+    console.log("span_stack:", span_stack)
   } else {
     console.log("no span found")
   }
+}
+
+function best_tooltip_position(elt, bwidth, bheight) {
+  // elt is the element which was clicked
+  var bbox = elt_offset(elt)
+  var x = bbox.left + bbox.width/2
+  var y = bbox.top + bbox.height/2
+
+  if (!line_info) {
+    line_info = analyze_lines()
+  }
+
+  pos = best_placement(line_info, x, y, bheight, bwidth, 0)
+  pos.left += 10
+  return pos
 }
 
 function grow_type_span() {
@@ -121,17 +145,29 @@ function update_span_dom(sp, tip) {
   console.log("span_stack:", span_stack)
 }
 
-// create an empty tooltip
-function create_tooltip(xpos,ypos) {
+
+// create a tool tip at the end of the body
+function create_tooltip( topLeft, content ) {
   var frag = document.createDocumentFragment()
       tip = document.createElement("div"),
       bodyNode = document.getElementsByTagName("body")[0];
 
   frag.appendChild(tip)
   tip.className = "tooltip-container"
-  tip.style.cssText = 'left:' + xpos + 'px;top:' + ypos + 'px'
+  if (topLeft) {
+    move_tooltip(tip, topLeft)
+  }
+  if (content) {
+    tip.innerHTML = content
+  }
   bodyNode.appendChild(frag)
   return tip
+}
+
+function move_tooltip(tip, topLeft) {
+  var xpos = topLeft.left
+  var ypos = topLeft.top
+  tip.style.cssText = 'left:' + xpos + 'px;top:' + ypos + 'px'
 }
 
 function remove_tooltip() {

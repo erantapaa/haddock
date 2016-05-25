@@ -30,3 +30,12 @@ function fmt(x, d) {
   return s.substr(0, s.length-d) + '.' + s.substr(s.length-d)
 }
 
+// show_object
+function show_object(obj) {
+  var s = ""
+  for (var x in obj) {
+    s += (", " + x + ": " + obj[x])
+  }
+  return s.substring(2)
+}
+
