@@ -38,6 +38,7 @@ function analyze_lines() {
   var line_top = [];      // top positions of each line
   var line_chars = [];
   var line_height = [];
+  var is_comment = [];
 
   var start = first_body_pre().firstChild
 
@@ -93,6 +94,7 @@ function analyze_lines() {
     elt = elt.nextSibling
   }
   // Process each comment
+
   for (var i = 0; i < comments.length; i++) {
     var blk = comments[i]
     var base_lineno = blk.lineno
@@ -116,6 +118,7 @@ function analyze_lines() {
       line_px_width[lineno] = 8*blk.nchars[j]
       line_top[lineno]      = top + j*avg_height
       line_height[lineno]   = avg_height
+      is_comment[lineno]    = true
     }
   }
   var info = {}
@@ -124,6 +127,7 @@ function analyze_lines() {
   info.line_top = line_top
   info.line_height = line_height
   info.nlines = line_chars.length-1 // last line number
+  info.is_comment = is_comment
   return info
 }
 

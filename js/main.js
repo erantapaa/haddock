@@ -79,7 +79,7 @@ function handle_click(e) {
 
     move_tooltip(tip, pos)
     highlight_span(s)                 // span.js
-    console.log("type:", sp[4])
+    console.log("type:", s[4])
     console.log("span_stack:", span_stack)
   } else {
     console.log("no span found")
@@ -96,7 +96,7 @@ function best_tooltip_position(elt, bwidth, bheight) {
     line_info = analyze_lines()
   }
 
-  pos = best_placement(line_info, x, y, bheight, bwidth, 0)
+  pos = find_placement(line_info, x, y, bheight, bwidth)
   pos.left += 10
   return pos
 }
