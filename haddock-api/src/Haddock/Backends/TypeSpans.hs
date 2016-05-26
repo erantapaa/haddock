@@ -28,6 +28,8 @@ import Data.List
 import Data.Function (on)
 import Data.Ord as O
 import Data.Maybe
+import Text.Printf
+import Data.Char
 
 -- Generics:
 
@@ -49,6 +51,24 @@ ppCollectTypedNodes tc_src mod = do
   liftErrMsg $ tell [ "=== " ++ msg ]
   return (lexprs, lbinds, lpats)
 
+-- generate type spans for a single Interface
+genTypeSpans :: DynFlags -> Interface -> IO (String, [(Int,Int,Int,Int,String)])
+genTypeSpans dflags iface = do
+  let (lexprs,lbinds,lpats) = ifaceTypedNodes iface
+      hs_env = ifaceHscEnv iface
+      modname = moduleNameString $ moduleName $ ifaceMod iface
+      style = defaultUserStyle
+
+  exprs <- mapM (getType hs_env) lexprs
+  binds <- mapM (getTypeBind hs_env) lbinds
+  pats  <- mapM (getTypePat hs_env) lpats
+
+  let pairs = catMaybes (exprs ++ binds ++ pats)
+      sorted :: [ (SrcSpan, Type) ]
+      sorted = sortBy (comparing (fst4.fourInts.fst)) pairs
+      tuples  = map (toTuple dflags style) sorted
+  return (modname, tuples)
+
 ppEmitTypeSpans :: DynFlags -> [Interface] -> FilePath -> FilePath -> IO ()
 ppEmitTypeSpans dflags ifaces outdir outfile = do
   let outpath = outdir </> outfile
@@ -57,22 +77,42 @@ ppEmitTypeSpans dflags ifaces outdir outfile = do
   withFile outpath WriteMode $ \h -> do
     let emit = hPutStrLn h
     forM_ ifaces $ \iface -> do
-      let (lexprs,lbinds,lpats) = ifaceTypedNodes iface
-          hs_env = ifaceHscEnv iface
-          modname = moduleNameString $ moduleName $ ifaceMod iface
+      (modname, tuples) <- genTypeSpans dflags iface
       emit $ "module " ++ modname
+      forM_ tuples $ \(a,b,c,d,t) -> do
+        emit $ intercalate " " [show a, show b, show c, show d, t]
 
-      exprs <- mapM (getType hs_env) lexprs
-      binds <- mapM (getTypeBind hs_env) lbinds
-      pats  <- mapM (getTypePat hs_env) lpats
+jslist (a,b,c,d,t) = "[" ++ intercalate "," [show a, show b, show c, show d, jsstr t] ++ "]"
 
-      let pairs = catMaybes (exprs ++ binds ++ pats)
-          sorted :: [ (SrcSpan, Type) ]
-          sorted = sortBy (comparing (fst4.fourInts.fst)) pairs
-          strs  = map (toTup dflags style) sorted
-      putStrLn $ "=== typed nodes for " ++ modname ++ ": " ++ show (length strs)
-      forM_ strs emit
-  putStrLn $ "=== typed nodes outpath: " ++ outpath
+-- simple conversion routines to avoid bringing in Aeson
+jsstr :: String -> String
+jsstr s = "\"" ++ concatMap jschr s ++ "\""
+jschr :: Char -> String
+jschr ch
+  | ch == '"'  = "\\\""
+  | ch == '\\' = "\\\\"
+  | isAscii ch && isPrint ch = [ch]
+  | n < 256    = "\\x" ++ printf "%02x" n
+  | otherwise  = "\\u" ++ printf "%04x" n
+  where n = ord ch
+
+-- emit the type spans as JS in separate files
+ppEmitTypeSpansJS :: DynFlags -> [Interface] -> FilePath -> IO ()
+ppEmitTypeSpansJS dflags ifaces outdir = do
+  forM_ ifaces $ \iface -> do
+    (modname, tuples) <- genTypeSpans dflags iface
+    let outpath = outdir </> (modname ++ ".js")
+        output = "var type_spans = [" 
+                   ++ (intercalate ",\n" $ map jslist tuples)
+                   ++ "\n]\n"
+    withFile outpath WriteMode $ \h -> do
+      hPutStrLn h output
+
+{-
+ppEmitTypeSpansJS :: DynFlags -> [Interface] -> FilePath -> FilePath -> IO ()
+ppEmitTypeSpansJS dflags ifaces outdir pattern = do
+  forM_ ifaces $ \iface -> do
+-}
 
 -- ------ Rendering a SrcSpan
 
@@ -112,6 +152,12 @@ toTup dflag style (span,typ) =
    let (a,b,c,d) = fourInts span
        t = pretty dflag style typ
    in intercalate " " (map show [a,b,c,d] ++ [t])
+
+toTuple :: DynFlags -> PprStyle -> (SrcSpan, Type) -> (Int,Int,Int,Int,String)
+toTuple dflag style (span,typ) =
+   let (a,b,c,d) = fourInts span
+       t = pretty dflag style typ
+   in (a,b,c,d,t)
 
 -- ------ getType
 

@@ -31,7 +31,7 @@ import Haddock.Backends.Xhtml.Themes (getThemes)
 import Haddock.Backends.LaTeX
 import Haddock.Backends.Hoogle
 import Haddock.Backends.Hyperlinker
-import Haddock.Backends.TypeSpans (ppEmitTypeSpans)
+import Haddock.Backends.TypeSpans (ppEmitTypeSpans, ppEmitTypeSpansJS)
 import Haddock.Interface
 import Haddock.Parser
 import Haddock.Types
@@ -51,6 +51,8 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import System.IO
 import System.Exit
+import System.Directory (createDirectory)
+import System.FilePath ((</>))
 
 #if defined(mingw32_HOST_OS)
 import Foreign
@@ -341,7 +343,10 @@ render dflags flags qual ifaces installedIfaces extSrcMap = do
     ppHyperlinkedSource odir libDir opt_source_css pretty srcMap ifaces
 
   when (Flag_Annot `elem` flags) $ do
-    ppEmitTypeSpans dflags visibleIfaces odir "typespans"
+    ppEmitTypeSpans dflags visibleIfaces odir "typespans.txt"
+    let path = odir </> "typespans"
+    createDirectory path
+    ppEmitTypeSpansJS dflags visibleIfaces path
 
 -- | From GHC 7.10, this function has a potential to crash with a
 -- nasty message such as @expectJust getPackageDetails@ because
