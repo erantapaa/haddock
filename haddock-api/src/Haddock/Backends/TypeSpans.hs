@@ -1,6 +1,6 @@
 {-# LANGUAGE GADTs, RankNTypes, PatternGuards, TupleSections #-}
 
-module Haddock.Backends.SpanTypes
+module Haddock.Backends.TypeSpans
 where
 
 import GhcMonad (Ghc, liftIO)
@@ -49,8 +49,8 @@ ppCollectTypedNodes tc_src mod = do
   liftErrMsg $ tell [ "=== " ++ msg ]
   return (lexprs, lbinds, lpats)
 
-ppEmitSpanTypes :: DynFlags -> [Interface] -> FilePath -> FilePath -> IO ()
-ppEmitSpanTypes dflags ifaces outdir outfile = do
+ppEmitTypeSpans :: DynFlags -> [Interface] -> FilePath -> FilePath -> IO ()
+ppEmitTypeSpans dflags ifaces outdir outfile = do
   let outpath = outdir </> outfile
       style = defaultUserStyle
 

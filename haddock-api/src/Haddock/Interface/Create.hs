@@ -25,7 +25,7 @@ import Haddock.Interface.Externals
 import Haddock.Backends.Hyperlinker.Types
 import Haddock.Backends.Hyperlinker.Ast as Hyperlinker
 import Haddock.Backends.Hyperlinker.Parser as Hyperlinker
-import Haddock.Backends.SpanTypes (ppCollectTypedNodes, ppEmitSpanTypes)
+import Haddock.Backends.TypeSpans (ppCollectTypedNodes, ppEmitTypeSpans)
 
 import qualified Data.Map as M
 import Data.Map (Map)

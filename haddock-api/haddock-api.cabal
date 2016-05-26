@@ -91,7 +91,7 @@ library
     Haddock.Backends.Hyperlinker.Renderer
     Haddock.Backends.Hyperlinker.Types
     Haddock.Backends.Hyperlinker.Utils
-    Haddock.Backends.SpanTypes
+    Haddock.Backends.TypeSpans
     Haddock.ModuleTree
     Haddock.Types
     Haddock.Doc

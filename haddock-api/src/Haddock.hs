@@ -31,7 +31,7 @@ import Haddock.Backends.Xhtml.Themes (getThemes)
 import Haddock.Backends.LaTeX
 import Haddock.Backends.Hoogle
 import Haddock.Backends.Hyperlinker
-import Haddock.Backends.SpanTypes (ppEmitSpanTypes)
+import Haddock.Backends.TypeSpans (ppEmitTypeSpans)
 import Haddock.Interface
 import Haddock.Parser
 import Haddock.Types
@@ -341,7 +341,7 @@ render dflags flags qual ifaces installedIfaces extSrcMap = do
     ppHyperlinkedSource odir libDir opt_source_css pretty srcMap ifaces
 
   when (Flag_Annot `elem` flags) $ do
-    ppEmitSpanTypes dflags visibleIfaces odir "type-srcspans"
+    ppEmitTypeSpans dflags visibleIfaces odir "typespans"
 
 -- | From GHC 7.10, this function has a potential to crash with a
 -- nasty message such as @expectJust getPackageDetails@ because
