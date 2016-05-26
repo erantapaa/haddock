@@ -226,7 +226,7 @@ function initialize() {
   var href = window.location.href
   var modname = leaf_name(href)
   modname = modname.replace(/\.html(#.*)?$/,'')
-  var src_url = "type-spans-" + modname + ".js"
+  var src_url = "typespans/" + modname + ".js"
 
   console.log("loading", src_url)
   load_script(src_url)

@@ -102,7 +102,7 @@ ppEmitTypeSpansJS dflags ifaces outdir = do
   forM_ ifaces $ \iface -> do
     (modname, tuples) <- genTypeSpans dflags iface
     let outpath = outdir </> (modname ++ ".js")
-        output = "var type_spans = [" 
+        output = "var type_spans = [\n" 
                    ++ (intercalate ",\n" $ map jslist tuples)
                    ++ "\n]\n"
     withFile outpath WriteMode $ \h -> do
