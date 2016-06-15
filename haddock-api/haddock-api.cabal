@@ -52,6 +52,7 @@ library
 
     , ghc-paths
     , haddock-library == 1.4.*
+    , syb
 
   hs-source-dirs:
       src
@@ -70,6 +71,7 @@ library
     Haddock.Interface.LexParseRn
     Haddock.Interface.ParseModuleHeader
     Haddock.Interface.Specialize
+    Haddock.Interface.Externals
     Haddock.Parser
     Haddock.Utils
     Haddock.Backends.Xhtml
@@ -89,6 +91,7 @@ library
     Haddock.Backends.Hyperlinker.Renderer
     Haddock.Backends.Hyperlinker.Types
     Haddock.Backends.Hyperlinker.Utils
+    Haddock.Backends.TypeSpans
     Haddock.ModuleTree
     Haddock.Types
     Haddock.Doc
