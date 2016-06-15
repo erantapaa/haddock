@@ -8,6 +8,7 @@ import Haddock.Backends.Hyperlinker.Types
 import Haddock.Backends.Hyperlinker.Utils
 
 import qualified GHC
+import qualified Module as GHC
 import qualified Name as GHC
 import qualified Unique as GHC
 
@@ -17,15 +18,19 @@ import Data.List
 import Data.Maybe
 import Data.Monoid
 import qualified Data.Map as Map
+import Data.Map (Map)
 
 import Text.XHtml (Html, HtmlAttr, (!))
 import qualified Text.XHtml as Html
+
+type ExternsMap    = Map GHC.Name (GHC.LImportDecl GHC.Name)
+type SrcExternsMap = (Map GHC.Module SrcPath, Map GHC.ModuleName SrcPath, ExternsMap)
 
 
 type StyleClass = String
 
 
-render :: Maybe FilePath -> Maybe FilePath -> SrcMap -> [RichToken]
+render :: Maybe FilePath -> Maybe FilePath -> SrcExternsMap -> [RichToken]
        -> Html
 render mcss mjs srcs tokens = header mcss mjs <> body srcs tokens
 
@@ -54,7 +59,7 @@ groupTokens ((RichToken tok (Just det)):rest) =
     same _ = False
 
 
-body :: SrcMap -> [RichToken] -> Html
+body :: SrcExternsMap -> [RichToken] -> Html
 body srcs tokens =
     Html.body . Html.pre $ hypsrc
   where
@@ -80,7 +85,7 @@ header mcss mjs =
         ]
 
 
-tokenGroup :: SrcMap -> TokenGroup -> Html
+tokenGroup :: SrcExternsMap -> TokenGroup -> Html
 tokenGroup _ (GrpNormal tok@(Token { .. }))
     | tkType == TkSpace = renderSpace (posRow . spStart $ tkSpan) tkValue
     | otherwise = tokenSpan tok ! attrs
@@ -142,7 +147,7 @@ externalAnchorIdent = hypSrcNameUrl
 internalAnchorIdent :: GHC.Name -> String
 internalAnchorIdent = ("local-" ++) . show . GHC.getKey . GHC.nameUnique
 
-hyperlink :: SrcMap -> TokenDetails -> Html -> Html
+hyperlink :: SrcExternsMap -> TokenDetails -> Html -> Html
 hyperlink srcs details = case rtkName details of
     Left name ->
         if GHC.isInternalName name
@@ -154,18 +159,25 @@ internalHyperlink :: GHC.Name -> Html -> Html
 internalHyperlink name content =
     Html.anchor content ! [ Html.href $ "#" ++ internalAnchorIdent name ]
 
-externalNameHyperlink :: SrcMap -> GHC.Name -> Html -> Html
-externalNameHyperlink (srcs, _) name content = case Map.lookup mdl srcs of
+externalNameHyperlink :: SrcExternsMap -> GHC.Name -> Html -> Html
+externalNameHyperlink (srcs, _, xmap) name content = case Map.lookup mdl srcs of
     Just SrcLocal -> Html.anchor content !
-        [ Html.href $ hypSrcModuleNameUrl mdl name ]
+        [ Html.href $ hypSrcModuleNameUrl mdl name, Html.strAttr "xdef" xdef ]
     Just (SrcExternal path) -> Html.anchor content !
-        [ Html.href $ path </> hypSrcModuleNameUrl mdl name ]
-    Nothing -> content
+        [ Html.href $ path </> hypSrcModuleNameUrl mdl name, Html.strAttr "xdef" xdef ]
+    Nothing -> let mdlname = GHC.moduleNameString (GHC.moduleName mdl)
+                   unitId  = GHC.unitIdString (GHC.moduleUnitId mdl)
+                   occName = GHC.getOccString name
+                   xref    = unitId ++ ":" ++ mdlname ++ "." ++ occName
+               in Html.anchor content ! [ Html.strAttr "xdef" xdef, Html.strAttr "xref" xref ]
   where
     mdl = GHC.nameModule name
+    xdef = case Map.lookup name xmap of
+             Just (GHC.L _ imp) -> "imported from " ++ GHC.moduleNameString (GHC.unLoc (GHC.ideclName imp))
+             Nothing            -> ""
 
-externalModHyperlink :: SrcMap -> GHC.ModuleName -> Html -> Html
-externalModHyperlink (_, srcs) name content = case Map.lookup name srcs of
+externalModHyperlink :: SrcExternsMap -> GHC.ModuleName -> Html -> Html
+externalModHyperlink (_, srcs, xmap) name content = case Map.lookup name srcs of
     Just SrcLocal -> Html.anchor content !
         [ Html.href $ hypSrcModuleUrl' name ]
     Just (SrcExternal path) -> Html.anchor content !
