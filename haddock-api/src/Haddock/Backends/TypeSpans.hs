@@ -5,6 +5,7 @@ module Haddock.Backends.TypeSpans
 where
 
 import Haddock.Types
+import Haddock.Backends.Hyperlinker.Utils (hypSrcDir)
 
 import Control.Monad
 import Data.Char
@@ -12,6 +13,7 @@ import Data.Maybe (isJust, fromMaybe, catMaybes)
 import Data.List (intercalate, sortBy)
 import qualified Data.Ord as O
 import Data.Ord (comparing)
+import System.Directory
 import System.IO
 import System.FilePath ((</>))
 import Text.Printf (printf)
@@ -50,14 +52,16 @@ ppCollectTypedNodes tc_src m = do
 
 -- emit the type spans as JS into separate files (one file per module)
 ppEmitTypeSpansJSON :: DynFlags -> [Interface] -> FilePath -> IO ()
-ppEmitTypeSpansJSON dflags ifaces outdir = do
+ppEmitTypeSpansJSON dflags ifaces outDir = do
+  let srcDir = outDir </> hypSrcDir
+  createDirectoryIfMissing True srcDir
   forM_ ifaces $ \iface -> do
     (modname, tuples) <- genTypeSpans dflags iface
-    let outpath = outdir </> (modname ++ ".js")
+    let jsonPath = srcDir </> "spans-" ++ (modname ++ ".js")
         output = "[\n"
                    ++ (intercalate ",\n" $ map jslist tuples)
                    ++ "\n]\n"
-    withFile outpath WriteMode $ \h -> do
+    withFile jsonPath WriteMode $ \h -> do
       hPutStrLn h output
 
 -- ----
