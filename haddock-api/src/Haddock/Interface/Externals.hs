@@ -1,6 +1,6 @@
 
 module Haddock.Interface.Externals
-  (ExternsMap, buildExternsMap)
+  (ghcBuildExternsMap)
 where
 
 import Haddock.Types
@@ -8,14 +8,15 @@ import Haddock.Types
 import Avail (AvailInfo(..), availsToNameSetWithSelectors, availName)
 import GHC
 import FieldLabel (FieldLbl(..))
-import IOEnv (readMutVar)
+import IOEnv (readMutVar, liftIO)
 import ListSetOps (unionLists)
 import Maybes (orElse)
 import NameEnv (emptyNameEnv, nameEnvElts, extendNameEnv_C)
 import NameSet (NameSet, elemNameSet, emptyNameSet, extendNameSet, mkNameSet, nameSetElems)
 import Outputable (pprPanic, ppr, hsep)
 import RdrName (GlobalRdrElt(..), ImportSpec(..), availFromGRE, bestImport, is_dloc)
-import TcRnTypes (RnM, tcg_rn_imports, tcg_rdr_env, tcg_used_gres)
+import TcRnTypes (RnM, tcg_rn_imports, tcg_used_gres)
+import TcRnMonad (initTcForLookup )
 
 import qualified Data.Map as Map
 import Data.Map (Map)
@@ -31,13 +32,18 @@ toNames :: AvailInfo -> [Name]
 toNames (Avail _ x) = [x]
 toNames (AvailTC x xs _) = (x:xs)
 
+debugIsOn :: Bool
 debugIsOn = False
+
+ghcBuildExternsMap :: TypecheckedModule -> Ghc ExternsMap
+ghcBuildExternsMap tm = do
+  hsc_env <- getSession
+  liftIO $ initTcForLookup hsc_env (buildExternsMap tm)
 
 buildExternsMap :: TypecheckedModule -> RnM ExternsMap
 buildExternsMap tcm = do
   let (gbl_env, _) = tm_internals_ tcm
       all_imports = tcg_rn_imports gbl_env
-      rdr_env = tcg_rdr_env gbl_env
   uses <- readMutVar (tcg_used_gres gbl_env)
   let usage = findImportUsage all_imports uses
 
@@ -121,13 +127,13 @@ extendImportMap gre imp_map
    = add_imp gre (bestImport (gre_imp gre)) imp_map
   where
     add_imp :: GlobalRdrElt -> ImportSpec -> ImportMap -> ImportMap
-    add_imp gre (ImpSpec { is_decl = imp_decl_spec }) imp_map
-      = Map.insertWith add decl_loc [avail] imp_map
+    add_imp gre' (ImpSpec { is_decl = imp_decl_spec }) imp_map'
+      = Map.insertWith add decl_loc [avail] imp_map'
       where
         add _ avails = avail : avails -- add is really just a specialised (++)
         decl_loc = srcSpanEnd (is_dloc imp_decl_spec)
                    -- For srcSpanEnd see Note [The ImportMap]
-        avail    = availFromGRE gre
+        avail    = availFromGRE gre'
 
 plusAvail :: AvailInfo -> AvailInfo -> AvailInfo
 plusAvail a1 a2

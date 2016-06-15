@@ -20,10 +20,12 @@ import Haddock.Options
 import Haddock.GhcUtils
 import Haddock.Utils
 import Haddock.Convert
+import Haddock.Interface.Externals (ghcBuildExternsMap)
 import Haddock.Interface.LexParseRn
 import Haddock.Backends.Hyperlinker.Types
 import Haddock.Backends.Hyperlinker.Ast as Hyperlinker
 import Haddock.Backends.Hyperlinker.Parser as Hyperlinker
+import Haddock.Backends.TypeSpans (ppCollectTypedNodes)
 
 import qualified Data.Map as M
 import Data.Map (Map)
@@ -128,6 +130,12 @@ createInterface tm flags modMap instIfaceMap = do
 
   tokenizedSrc <- mkMaybeTokenizedSrc flags tm
 
+  externsMap <- liftGhcToErrMsgGhc $ ghcBuildExternsMap tm
+
+  typedNodes <- ppCollectTypedNodes (tm_typechecked_source tm) mdl
+
+  hs_env <- liftGhcToErrMsgGhc getSession
+
   return $! Interface {
     ifaceMod             = mdl
   , ifaceOrigFilename    = msHsFilePath ms
@@ -154,9 +162,9 @@ createInterface tm flags modMap instIfaceMap = do
   , ifaceHaddockCoverage = coverage
   , ifaceWarningMap      = warningMap
   , ifaceTokenizedSrc    = tokenizedSrc
-  , ifaceExternsMap      = M.empty
-  , ifaceTypedNodes      = ([], [], []) -- XXXX
-  , ifaceHscEnv          = undefined -- XXXX
+  , ifaceExternsMap      = externsMap
+  , ifaceTypedNodes      = typedNodes
+  , ifaceHscEnv          = hs_env
   }
 
 mkAliasMap :: DynFlags -> Maybe RenamedSource -> M.Map Module ModuleName
