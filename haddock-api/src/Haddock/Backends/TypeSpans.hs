@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs, RankNTypes, PatternGuards, TupleSections #-}
 
 module Haddock.Backends.TypeSpans
-  (ppCollectTypedNodes, ppEmitTypeSpansJS, TypedNodes)
+  (ppCollectTypedNodes, ppEmitTypeSpansJS)
 where
 
 import Haddock.Types
@@ -32,11 +32,6 @@ import TcHsSyn (hsPatType)
 import Data.Data
 import Data.Generics.Aliases hiding (GT)
 import Type (mkFunTys)
-
-type TypedNodes = ([LHsExpr Id], [LHsBind Id], [LPat Id])
-
-ifaceHscEnv = undefined
-ifaceTypedNodes = undefined
 
 -- ----
 

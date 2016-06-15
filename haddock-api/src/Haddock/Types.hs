@@ -58,6 +58,8 @@ type DeclMap       = Map Name [LHsDecl Name]
 type InstMap       = Map SrcSpan Name
 type FixMap        = Map Name Fixity
 type DocPaths      = (FilePath, Maybe FilePath) -- paths to HTML and sources
+type TypedNodes    = ([LHsExpr Id], [LHsBind Id], [LPat Id])
+type ExternsMap    = Map Name (LImportDecl Name)
 
 
 -----------------------------------------------------------------------------
@@ -140,6 +142,13 @@ data Interface = Interface
     -- | Tokenized source code of module (avaliable if Haddock is invoked with
     -- source generation flag).
   , ifaceTokenizedSrc :: !(Maybe [RichToken])
+
+    -- | Map from located names to import decls
+  , ifaceExternsMap     :: (Maybe ExternsMap)
+
+    -- | All the source spans and their types
+  , ifaceTypedNodes     :: TypedNodes
+  , ifaceHscEnv         :: HscEnv
   }
 
 type WarningMap = Map Name (Doc Name)
