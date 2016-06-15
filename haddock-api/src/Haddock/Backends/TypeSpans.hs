@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs, RankNTypes, PatternGuards, TupleSections #-}
 
 module Haddock.Backends.TypeSpans
-  (ppCollectTypedNodes, ppEmitTypeSpansJS)
+  (ppCollectTypedNodes, ppEmitTypeSpansJSON)
 where
 
 import Haddock.Types
@@ -49,12 +49,12 @@ ppCollectTypedNodes tc_src m = do
   return (lexprs, lbinds, lpats)
 
 -- emit the type spans as JS into separate files (one file per module)
-ppEmitTypeSpansJS :: DynFlags -> [Interface] -> FilePath -> IO ()
-ppEmitTypeSpansJS dflags ifaces outdir = do
+ppEmitTypeSpansJSON :: DynFlags -> [Interface] -> FilePath -> IO ()
+ppEmitTypeSpansJSON dflags ifaces outdir = do
   forM_ ifaces $ \iface -> do
     (modname, tuples) <- genTypeSpans dflags iface
     let outpath = outdir </> (modname ++ ".js")
-        output = "var type_spans = [\n"
+        output = "[\n"
                    ++ (intercalate ",\n" $ map jslist tuples)
                    ++ "\n]\n"
     withFile outpath WriteMode $ \h -> do
