@@ -47,7 +47,8 @@ ppHyperlinkedModuleSource srcdir pretty srcs iface =
         Just tokens -> writeFile path . html . render' $ tokens
         Nothing -> return ()
   where
-    render' = render (Just srcCssFile) (Just highlightScript) undefined -- XXX srcs
+    render' = render (Just srcCssFile) (Just highlightScript) srcExternsMap
+    srcExternsMap = mkSrcExternsMap srcs (ifaceExternsMap iface)
     html = if pretty then renderHtml else showHtml
     path = srcdir </> hypSrcModuleFile (ifaceMod iface)
 

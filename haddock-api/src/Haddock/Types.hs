@@ -20,6 +20,8 @@ module Haddock.Types (
   , HsDocString, LHsDocString
   , Fixity(..)
   , module Documentation.Haddock.Types
+  , ExternsMap
+  , SrcExternsMap
  ) where
 
 import Control.Exception
@@ -59,7 +61,6 @@ type InstMap       = Map SrcSpan Name
 type FixMap        = Map Name Fixity
 type DocPaths      = (FilePath, Maybe FilePath) -- paths to HTML and sources
 type TypedNodes    = ([LHsExpr Id], [LHsBind Id], [LPat Id])
-type ExternsMap    = Map Name (LImportDecl Name)
 
 
 -----------------------------------------------------------------------------
@@ -144,11 +145,11 @@ data Interface = Interface
   , ifaceTokenizedSrc :: !(Maybe [RichToken])
 
     -- | Map from located names to import decls
-  , ifaceExternsMap     :: (Maybe ExternsMap)
+  , ifaceExternsMap   :: ExternsMap
 
     -- | All the source spans and their types
-  , ifaceTypedNodes     :: TypedNodes
-  , ifaceHscEnv         :: HscEnv
+  , ifaceTypedNodes   :: TypedNodes
+  , ifaceHscEnv       :: HscEnv
   }
 
 type WarningMap = Map Name (Doc Name)

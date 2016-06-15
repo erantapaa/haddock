@@ -3,6 +3,8 @@ module Haddock.Interface.Externals
   (ExternsMap, buildExternsMap)
 where
 
+import Haddock.Types
+
 import Avail (AvailInfo(..), availsToNameSetWithSelectors, availName)
 import GHC
 import FieldLabel (FieldLbl(..))
@@ -17,8 +19,6 @@ import TcRnTypes (RnM, tcg_rn_imports, tcg_rdr_env, tcg_used_gres)
 
 import qualified Data.Map as Map
 import Data.Map (Map)
-
-type ExternsMap    = Map GHC.Name (GHC.LImportDecl GHC.Name)
 
 type ImportDeclUsage
    = ( LImportDecl Name   -- The import declaration

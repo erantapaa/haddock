@@ -36,14 +36,14 @@ import Type (mkFunTys)
 -- ----
 
 ppCollectTypedNodes :: TypecheckedSource -> Module -> ErrMsgGhc TypedNodes
-ppCollectTypedNodes tc_src mod = do
-  let modl = moduleNameString $ moduleName mod
+ppCollectTypedNodes tc_src m = do
+  let modname = moduleNameString $ moduleName m
   let lexprs = findLocated tc_src :: [LHsExpr Id]
       lbinds = findLocated tc_src :: [LHsBind Id]
       lpats  = findLocated tc_src :: [LPat Id]
-      msg = modl ++ ": exprs: " ++ show (length lexprs)
-                 ++ " binds: " ++ show (length lbinds)
-                 ++ " pats: " ++ show (length lpats)
+      msg = modname ++ ": exprs: " ++ show (length lexprs)
+                    ++ " binds: " ++ show (length lbinds)
+                    ++ " pats: " ++ show (length lpats)
 
   liftErrMsg $ tell [ "=== " ++ msg ]
   return (lexprs, lbinds, lpats)
@@ -68,7 +68,6 @@ genTypeSpans dflags iface = do
   let (lexprs,lbinds,lpats) = ifaceTypedNodes iface
       hs_env = ifaceHscEnv iface
       modname = moduleNameString $ moduleName $ ifaceMod iface
-      style = defaultUserStyle
 
   exprs <- mapM (getType hs_env) lexprs
   binds <- mapM (getTypeBind hs_env) lbinds
@@ -77,11 +76,12 @@ genTypeSpans dflags iface = do
   let pairs = catMaybes (exprs ++ binds ++ pats)
       sorted :: [ (SrcSpan, Type) ]
       sorted = sortBy (comparing (fst4.fourInts.fst)) pairs
-      tuples  = map (toTuple dflags style) sorted
+      tuples  = map (toTuple dflags defaultUserStyle) sorted
   return (modname, tuples)
 
 -- ----
 
+jslist :: (Int,Int,Int,Int,String) -> String
 jslist (a,b,c,d,t)
   = "[" ++ intercalate "," [show a, show b, show c, show d, jsstr t] ++ "]"
 
@@ -100,13 +100,15 @@ jschr ch
 -- ----
 
 fst4 :: (a,b,c,d) -> a
-fst4 (a,b,c,d) = a
+fst4 (a,_,_,_) = a
 
+{-
 cmp :: SrcSpan -> SrcSpan -> Ordering
 cmp a b
   | a `isSubspanOf` b = O.LT
   | b `isSubspanOf` a = O.GT
   | otherwise         = O.EQ
+-}
 
 fourInts :: SrcSpan -> (Int,Int,Int,Int)
 fourInts = fromMaybe (0,0,0,0) . getSrcSpan
@@ -122,11 +124,11 @@ getSrcSpan _ = Nothing
 
 -- ----
 
-showDocWith :: DynFlags -> Pretty.Mode -> Pretty.Doc -> String
-showDocWith dflags mde = Pretty.renderStyle (style { mode =  mde })
+showDocWith :: Pretty.Doc -> String
+showDocWith = Pretty.renderStyle (Pretty.style { mode =  OneLineMode })
 
 showOneLine :: DynFlags -> PprStyle -> SDoc -> String
-showOneLine dflag style = showDocWith dflag OneLineMode . withPprStyleDoc dflag style
+showOneLine dflag style = showDocWith . withPprStyleDoc dflag style
 
 pretty :: DynFlags -> PprStyle -> Type -> String
 pretty dflag style = showOneLine dflag style . pprTypeForUser

@@ -6,6 +6,8 @@ import qualified GHC
 import Data.Map (Map)
 import qualified Data.Map as Map
 
+type ExternsMap    = Map GHC.Name (GHC.LImportDecl GHC.Name)
+type SrcExternsMap = (Map GHC.Module SrcPath, Map GHC.ModuleName SrcPath, ExternsMap)
 
 data Token = Token
     { tkType :: TokenType
@@ -83,3 +85,6 @@ type SrcMap = (Map GHC.Module SrcPath, Map GHC.ModuleName SrcPath)
 
 mkSrcMap :: Map GHC.Module SrcPath -> SrcMap
 mkSrcMap srcs = (srcs, Map.mapKeys GHC.moduleName srcs)
+
+mkSrcExternsMap :: SrcMap -> ExternsMap -> SrcExternsMap
+mkSrcExternsMap srcs@(a,b) exts = (a,b,exts)

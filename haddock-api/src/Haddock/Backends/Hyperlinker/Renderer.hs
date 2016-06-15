@@ -23,9 +23,6 @@ import Data.Map (Map)
 import Text.XHtml (Html, HtmlAttr, (!))
 import qualified Text.XHtml as Html
 
-type ExternsMap    = Map GHC.Name (GHC.LImportDecl GHC.Name)
-type SrcExternsMap = (Map GHC.Module SrcPath, Map GHC.ModuleName SrcPath, ExternsMap)
-
 
 type StyleClass = String
 
